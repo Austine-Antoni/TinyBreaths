@@ -1,7 +1,7 @@
 arduino_iot_cloud==1.4.1
 Flask==3.1.0
 joblib==1.4.2
-numpy==2.2.3
+numpy==1.18
 opencv_python==4.10.0.84
 pandas==2.2.3
 plotly==6.0.0
