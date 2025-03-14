@@ -14,13 +14,8 @@ API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
 API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jcmxtZGFkdGVrYXpmbmhtcXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MTA2MzksImV4cCI6MjA1NzA4NjYzOX0.25bkWBV3v4cyjcA_-dUL8-IK3fSywARfVQ82UsZPelc'
 supabase = create_client(API_URL, API_KEY)
 
-# Load model and scaler
-model_dir = "LSTM-v4"
-model_path = os.path.join(model_dir, "LSTM_model.h5")
-scaler_path = os.path.join(model_dir, "scaler.pkl")
-
-model = load_model(model_path)
-scaler = joblib.load(scaler_path)
+model = load_model(LSTM_model.h5)
+scaler = joblib.load(scaler.pkl)
 
 st.title("Real-Time Respiratory Monitoring")
 
