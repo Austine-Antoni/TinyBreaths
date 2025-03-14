@@ -5,6 +5,7 @@ numpy==2.0
 pandas==2.2.3
 plotly==6.0.0
 pyserial==3.5
+scikit-learn
 scipy==1.15.2
 streamlit==1.42.2
 supabase==2.13.0
