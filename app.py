@@ -13,7 +13,7 @@ API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
 API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jcmxtZGFkdGVrYXpmbmhtcXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MTA2MzksImV4cCI6MjA1NzA4NjYzOX0.25bkWBV3v4cyjcA_-dUL8-IK3fSywARfVQ82UsZPelc'  
 supabase = create_client(API_URL, API_KEY)
 
-model = load_model("LSTM_model.h5")
+model = load_model("LSTM_model.h5", compile=false)
 scaler = joblib.load("scaler.pkl")
 
 # App title
