@@ -17,7 +17,7 @@ model = load_model("LSTM_model.h5", compile = False)
 scaler = joblib.load("scaler.pkl")
 
 # App title
-st.title("Real-Time Respiratory Rate (RR) Monitoring")
+st.title("Respiratory Rate (RR) Monitoring Dashboard")
 
 # Placeholder for Date and Time
 datetime_placeholder = st.subheader("📅 Loading date and time...")
