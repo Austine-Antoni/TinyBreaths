@@ -119,8 +119,8 @@ while True:
                           title=f"Respiratory Rate Over Time (Latest: {latest_timestamp})",
                           labels={"timestamp": "Time", "count_60s": "RR per min", "count": "Total RR"})
             chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
-        else:
-            status_placeholder.error("⚠️ Connect the device.")
     
     except Exception as e:
         st.error(f"Error in main loop: {e}")
+        status_placeholder.error("⚠️ Connect the device.")
+
