@@ -124,7 +124,7 @@ while True:
 
         if last_data_timestamp:
             elapsed_time = (datetime.datetime.now() - last_data_timestamp).total_seconds() / 60
-            if elapsed_time > 10:
+            if elapsed_time > 1:
                 status_placeholder.error("⚠️ Connect the device.")
     
     except Exception as e:
