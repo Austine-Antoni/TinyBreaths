@@ -13,8 +13,13 @@ API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
 API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jcmxtZGFkdGVrYXpmbmhtcXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MTA2MzksImV4cCI6MjA1NzA4NjYzOX0.25bkWBV3v4cyjcA_-dUL8-IK3fSywARfVQ82UsZPelc'  
 supabase = create_client(API_URL, API_KEY)
 
-model = load_model("LSTM_model.h5")
-scaler = joblib.load("scaler.pkl")
+# Load model and scaler
+model_dir = "C:/Users/Austine/Desktop/app"
+model_path = os.path.join(model_dir, "LSTM_model.h5")
+scaler_path = os.path.join(model_dir, "scaler.pkl")
+
+model = load_model(model_path)
+scaler = joblib.load(scaler_path)
 
 # App title
 st.title("Real-Time Respiratory Rate (RR) Monitoring")
@@ -67,7 +72,6 @@ def update_supabase_prediction(record_id, prediction):
 last_valid_stored_count = None
 last_valid_prediction = None
 last_valid_timestamp = None
-last_data_timestamp = None  # Track the timestamp of the last received data
 
 # Main loop to process data in real-time
 while True:
@@ -82,10 +86,9 @@ while True:
             df["timestamp"] = pd.to_datetime(df["timestamp"])
             
             latest_data = df.iloc[0]
-            last_data_timestamp = latest_data["timestamp"]
             
             # Update the date and time placeholder with the latest timestamp
-            latest_timestamp = last_data_timestamp.strftime("%A, %B %d, %Y | %H:%M:%S")
+            latest_timestamp = latest_data["timestamp"].strftime("%A, %B %d, %Y | %H:%M:%S")
             datetime_placeholder.subheader(f"📅 {latest_timestamp}")
 
             # Check and update prediction
@@ -98,7 +101,7 @@ while True:
             if latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
                 last_valid_stored_count = latest_data["stored_count_60s"]
                 last_valid_prediction = latest_data["prediction"]
-                last_valid_timestamp = last_data_timestamp.strftime("%Y-%m-%d %H:%M:%S")
+                last_valid_timestamp = latest_data["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
 
             # Display patient chart
             data_table_placeholder.dataframe(df)
@@ -121,11 +124,8 @@ while True:
                           title=f"Respiratory Rate Over Time (Latest: {latest_timestamp})",
                           labels={"timestamp": "Time", "count_60s": "RR per min", "count": "Total RR"})
             chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
-
-        if last_data_timestamp:
-            elapsed_time = (datetime.datetime.now() - last_data_timestamp).total_seconds() / 60
-            if elapsed_time > 1:
-                status_placeholder.error("⚠️ Connect the device.")
+        else:
+            status_placeholder.error("⚠️ Connect the device.")
     
     except Exception as e:
         st.error(f"Error in main loop: {e}")
