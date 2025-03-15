@@ -73,7 +73,7 @@ last_data_timestamp = None  # Track the timestamp of the last received data
 while True:
     try:
         latest_data_list = fetch_latest_data()
-        if latest_data_list is None:
+        if not latest_data_list:
             status_placeholder.error("⚠️ Connect the device.")
             continue 
             
