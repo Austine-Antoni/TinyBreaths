@@ -92,7 +92,7 @@ while True:
             if pd.isna(latest_data.get("prediction", None)):
                 predicted_value = predict_category(latest_data["stored_count_60s"])
                 update_supabase_prediction(latest_data["id"], predicted_value)
-                latest_data["prediction"] = predicted_value
+                df.at[df.index[0], "prediction"] = predicted_value
             
             # Store last valid values if there is a prediction
             if latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
