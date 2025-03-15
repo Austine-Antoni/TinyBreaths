@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.express as px
 from tensorflow.keras.models import load_model
 from supabase import create_client
+import time
 
 # Supabase connection
 API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
@@ -67,6 +68,7 @@ def update_supabase_prediction(record_id, prediction):
 last_valid_stored_count = None
 last_valid_prediction = None
 last_valid_timestamp = None
+last_data_timestamp = datetime.datetime.now()
 
 # Main loop to process data in real-time
 while True:
@@ -76,14 +78,25 @@ while True:
         if latest_data_list is None:
             status_placeholder.error("⚠️ Connect the device.")
             continue
+        
         df = pd.DataFrame(latest_data_list)
-
+        if df.empty:
+            status_placeholder.error("⚠️ Connect the device.")
+            continue
+        
         df["count"] = df["count"].astype(int)
         df["count_60s"] = df["count_60s"].astype(int)
         df["stored_count_60s"] = df["stored_count_60s"].astype(int)
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         
         latest_data = df.iloc[0]
+        last_data_timestamp = latest_data["timestamp"]
+        
+        # Check if data is older than 10 minutes
+        elapsed_time = (datetime.datetime.now() - last_data_timestamp).total_seconds() / 60
+        if elapsed_time > 10:
+            status_placeholder.error("⚠️ Connect the device.")
+            continue
         
         # Update the date and time placeholder with the latest timestamp
         latest_timestamp = latest_data["timestamp"].strftime("%A, %B %d, %Y | %H:%M:%S")
@@ -93,7 +106,7 @@ while True:
         if pd.isna(latest_data.get("prediction", None)):
             predicted_value = predict_category(latest_data["stored_count_60s"])
             update_supabase_prediction(latest_data["id"], predicted_value)
-            df.loc[df.index[0], "prediction"] = predicted_value
+            latest_data["prediction"] = predicted_value
         
         # Store last valid values if there is a prediction
         if latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
@@ -125,3 +138,5 @@ while True:
     
     except Exception as e:
         st.error(f"Error in main loop: {e}")
+    
+    time.sleep(5)
