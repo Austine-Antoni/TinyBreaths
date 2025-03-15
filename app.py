@@ -67,6 +67,7 @@ def update_supabase_prediction(record_id, prediction):
 last_valid_stored_count = None
 last_valid_prediction = None
 last_valid_timestamp = None
+last_data_timestamp = None  # Track the timestamp of the last received data
 
 # Main loop to process data in real-time
 while True:
@@ -81,9 +82,10 @@ while True:
             df["timestamp"] = pd.to_datetime(df["timestamp"])
             
             latest_data = df.iloc[0]
-
+            last_data_timestamp = latest_data["timestamp"]
+            
             # Update the date and time placeholder with the latest timestamp
-            latest_timestamp = latest_data["timestamp"].strftime("%A, %B %d, %Y | %H:%M:%S")
+            latest_timestamp = last_data_timestamp.strftime("%A, %B %d, %Y | %H:%M:%S")
             datetime_placeholder.subheader(f"📅 {latest_timestamp}")
 
             # Check and update prediction
@@ -96,46 +98,34 @@ while True:
             if latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
                 last_valid_stored_count = latest_data["stored_count_60s"]
                 last_valid_prediction = latest_data["prediction"]
-                last_valid_timestamp = latest_data["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
+                last_valid_timestamp = last_data_timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
-            # Ensure table displays all columns without scrolling
-            st.markdown(
-                """
-                <style>
-                .dataframe { overflow-x: hidden !important; }
-                </style>
-                """,
-                unsafe_allow_html=True
-            )
-            data_table_placeholder.dataframe(df.style.set_properties(**{'width': '100%'}))  
+            # Display patient chart
+            data_table_placeholder.dataframe(df)
 
-            # Display metrics (aligned)
+            # Display metrics
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
             total_count_placeholder.metric("📈 Total RR", latest_data["count"])
 
-            # Display alert for any condition (Normal, Tachypnea, Bradypnea)
+            # Display alert based on prediction
             if last_valid_prediction:
                 if last_valid_prediction == "Normal":
-                    status_placeholder.success(
-                        f"✅ Normal ({last_valid_timestamp})\n"
-                        f"📊 Stored Count: {last_valid_stored_count}"
-                    )
+                    status_placeholder.success(f"✅ Normal ({last_valid_timestamp})\n📊 Stored Count: {last_valid_stored_count}")
                 elif last_valid_prediction == "Tachypnea":
-                    status_placeholder.warning(
-                        f"⚠️ ALERT ({last_valid_timestamp}): Tachypnea detected!\n"
-                        f"📊 Stored Count: {last_valid_stored_count}"
-                    )
+                    status_placeholder.warning(f"⚠️ ALERT ({last_valid_timestamp}): Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count}")
                 elif last_valid_prediction == "Bradypnea":
-                    status_placeholder.error(
-                        f"🚨 CRITICAL ALERT ({last_valid_timestamp}): Bradypnea detected!\n"
-                        f"📊 Stored Count: {last_valid_stored_count}"
-                    )
+                    status_placeholder.error(f"🚨 CRITICAL ALERT ({last_valid_timestamp}): Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count}")
 
-            # Chart at the bottom
+            # Chart update
             fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
                           title=f"Respiratory Rate Over Time (Latest: {latest_timestamp})",
                           labels={"timestamp": "Time", "count_60s": "RR per min", "count": "Total RR"})
-            chart_placeholder.plotly_chart(fig, use_container_width=True, key=str(datetime.datetime.now().timestamp()))
+            chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
 
+        if last_data_timestamp:
+            elapsed_time = (datetime.datetime.now() - last_data_timestamp).total_seconds() / 60
+            if elapsed_time > 10:
+                status_placeholder.error("⚠️ Connect the device.")
+    
     except Exception as e:
         st.error(f"Error in main loop: {e}")
