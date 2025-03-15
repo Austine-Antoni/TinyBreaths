@@ -7,14 +7,13 @@ import pandas as pd
 import plotly.express as px
 from tensorflow.keras.models import load_model
 from supabase import create_client
-import time
 
 # Supabase connection
 API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
 API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jcmxtZGFkdGVrYXpmbmhtcXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MTA2MzksImV4cCI6MjA1NzA4NjYzOX0.25bkWBV3v4cyjcA_-dUL8-IK3fSywARfVQ82UsZPelc'  
 supabase = create_client(API_URL, API_KEY)
 
-model = load_model("LSTM_model.h5", compile=False)
+model = load_model("LSTM_model.h5")
 scaler = joblib.load("scaler.pkl")
 
 # App title
@@ -42,7 +41,7 @@ chart_placeholder = st.empty()
 # Function to fetch latest data
 def fetch_latest_data():
     response = supabase.table('maintable').select('*').order('timestamp', desc=True).limit(20).execute()
-    return response.data if response.data else None
+    return response.data if response.data else []
 
 # Function to make predictions
 def predict_category(stored_count_60s):
@@ -68,75 +67,65 @@ def update_supabase_prediction(record_id, prediction):
 last_valid_stored_count = None
 last_valid_prediction = None
 last_valid_timestamp = None
-last_data_timestamp = datetime.datetime.now()
+last_data_timestamp = None  # Track the timestamp of the last received data
 
 # Main loop to process data in real-time
 while True:
     try:
         latest_data_list = fetch_latest_data()
         
-        if latest_data_list is None:
-            status_placeholder.error("⚠️ Connect the device.")
-            continue
-        
-        df = pd.DataFrame(latest_data_list)
-        if df.empty:
-            status_placeholder.error("⚠️ Connect the device.")
-            continue
-        
-        df["count"] = df["count"].astype(int)
-        df["count_60s"] = df["count_60s"].astype(int)
-        df["stored_count_60s"] = df["stored_count_60s"].astype(int)
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
-        
-        latest_data = df.iloc[0]
-        last_data_timestamp = latest_data["timestamp"]
-        
-        # Check if data is older than 10 minutes
-        elapsed_time = (datetime.datetime.now() - last_data_timestamp).total_seconds() / 60
-        if elapsed_time > 10:
-            status_placeholder.error("⚠️ Connect the device.")
-            continue
-        
-        # Update the date and time placeholder with the latest timestamp
-        latest_timestamp = latest_data["timestamp"].strftime("%A, %B %d, %Y | %H:%M:%S")
-        datetime_placeholder.subheader(f"📅 {latest_timestamp}")
+        if latest_data_list:
+            df = pd.DataFrame(latest_data_list)
+            df["count"] = df["count"].astype(int)
+            df["count_60s"] = df["count_60s"].astype(int)
+            df["stored_count_60s"] = df["stored_count_60s"].astype(int)
+            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            
+            latest_data = df.iloc[0]
+            last_data_timestamp = latest_data["timestamp"]
+            
+            # Update the date and time placeholder with the latest timestamp
+            latest_timestamp = last_data_timestamp.strftime("%A, %B %d, %Y | %H:%M:%S")
+            datetime_placeholder.subheader(f"📅 {latest_timestamp}")
 
-        # Check and update prediction
-        if pd.isna(latest_data.get("prediction", None)):
-            predicted_value = predict_category(latest_data["stored_count_60s"])
-            update_supabase_prediction(latest_data["id"], predicted_value)
-            df.loc[df.index[0], "prediction"] = predicted_value
-        
-        # Store last valid values if there is a prediction
-        if latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
-            last_valid_stored_count = latest_data["stored_count_60s"]
-            last_valid_prediction = latest_data["prediction"]
-            last_valid_timestamp = latest_data["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
+            # Check and update prediction
+            if pd.isna(latest_data.get("prediction", None)):
+                predicted_value = predict_category(latest_data["stored_count_60s"])
+                update_supabase_prediction(latest_data["id"], predicted_value)
+                latest_data["prediction"] = predicted_value
+            
+            # Store last valid values if there is a prediction
+            if latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
+                last_valid_stored_count = latest_data["stored_count_60s"]
+                last_valid_prediction = latest_data["prediction"]
+                last_valid_timestamp = last_data_timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
-        # Display patient chart
-        data_table_placeholder.dataframe(df)
+            # Display patient chart
+            data_table_placeholder.dataframe(df)
 
-        # Display metrics
-        live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
-        total_count_placeholder.metric("📈 Total RR", latest_data["count"])
+            # Display metrics
+            live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
+            total_count_placeholder.metric("📈 Total RR", latest_data["count"])
 
-        # Display alert based on prediction
-        if last_valid_prediction:
-            if last_valid_prediction == "Normal":
-                status_placeholder.success(f"✅ Normal ({last_valid_timestamp})\n📊 Stored Count: {last_valid_stored_count}")
-            elif last_valid_prediction == "Tachypnea":
-                status_placeholder.warning(f"⚠️ ALERT ({last_valid_timestamp}): Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count}")
-            elif last_valid_prediction == "Bradypnea":
-                status_placeholder.error(f"🚨 CRITICAL ALERT ({last_valid_timestamp}): Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count}")
+            # Display alert based on prediction
+            if last_valid_prediction:
+                if last_valid_prediction == "Normal":
+                    status_placeholder.success(f"✅ Normal ({last_valid_timestamp})\n📊 Stored Count: {last_valid_stored_count}")
+                elif last_valid_prediction == "Tachypnea":
+                    status_placeholder.warning(f"⚠️ ALERT ({last_valid_timestamp}): Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count}")
+                elif last_valid_prediction == "Bradypnea":
+                    status_placeholder.error(f"🚨 CRITICAL ALERT ({last_valid_timestamp}): Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count}")
 
-        # Chart update
-        fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
-                      title=f"Respiratory Rate Over Time (Latest: {latest_timestamp})",
-                      labels={"timestamp": "Time", "count_60s": "RR per min", "count": "Total RR"})
-        chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
+            # Chart update
+            fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
+                          title=f"Respiratory Rate Over Time (Latest: {latest_timestamp})",
+                          labels={"timestamp": "Time", "count_60s": "RR per min", "count": "Total RR"})
+            chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
+
+        if last_data_timestamp:
+            elapsed_time = (datetime.datetime.now() - last_data_timestamp).total_seconds() / 60
+            if elapsed_time > 10:
+                status_placeholder.error("⚠️ Connect the device.")
     
     except Exception as e:
         st.error(f"Error in main loop: {e}")
-    
-    time.sleep(5)
