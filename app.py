@@ -35,7 +35,7 @@ with col2:
     total_count_placeholder = st.empty()
     status_placeholder = st.empty()  # Status for normal/warnings
 
-st.subheader("📈 RR Over Time")
+st.subheader("📈 Respiratory Rate Over Time")
 chart_placeholder = st.empty()
 
 # Function to fetch latest data
@@ -113,15 +113,15 @@ while True:
             # Display alert based on prediction
             if last_valid_prediction:
                 if last_valid_prediction == "Normal":
-                    status_placeholder.success(f"✅ Normal ({last_valid_timestamp})\n📊 Stored Count: {last_valid_stored_count}")
+                    status_placeholder.success(f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
                 elif last_valid_prediction == "Tachypnea":
-                    status_placeholder.warning(f"⚠️ ALERT ({last_valid_timestamp}): Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count}")
+                    status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
                 elif last_valid_prediction == "Bradypnea":
-                    status_placeholder.error(f"🚨 CRITICAL ALERT ({last_valid_timestamp}): Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count}")
+                    status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
 
             # Chart update
             fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
-                          title=f"Respiratory Rate Over Time (Latest: {latest_timestamp})",
+                          title=f"RR Over Time (Latest: {latest_timestamp})",
                           labels={"timestamp": "Time", "count_60s": "RR per min", "count": "Total RR"})
             chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
 
