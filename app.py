@@ -77,11 +77,6 @@ while True:
             status_placeholder.error("⚠️ Connect the device.")
             continue
         
-        df = pd.DataFrame(latest_data_list)
-        if df.empty:
-            status_placeholder.error("⚠️ Connect the device.")
-            continue
-        
         df["count"] = df["count"].astype(int)
         df["count_60s"] = df["count_60s"].astype(int)
         df["stored_count_60s"] = df["stored_count_60s"].astype(int)
