@@ -73,7 +73,10 @@ last_data_timestamp = None  # Track the timestamp of the last received data
 while True:
     try:
         latest_data_list = fetch_latest_data()
-        
+        if latest_data_list is None:
+            status_placeholder.error("⚠️ Connect the device.")
+            continue 
+            
         if latest_data_list:
             df = pd.DataFrame(latest_data_list)
             df["count"] = df["count"].astype(int)
@@ -122,10 +125,6 @@ while True:
                           labels={"timestamp": "Time", "count_60s": "RR per min", "count": "Total RR"})
             chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
 
-        if last_data_timestamp:
-            elapsed_time = (datetime.datetime.now() - last_data_timestamp).total_seconds() / 60
-            if elapsed_time > 10:
-                status_placeholder.error("⚠️ Connect the device.")
     
     except Exception as e:
         st.error(f"Error in main loop: {e}")
