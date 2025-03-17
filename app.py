@@ -17,7 +17,7 @@ model = load_model("LSTM_model.h5", compile = False)
 scaler = joblib.load("scaler.pkl")
 
 # Create two columns
-col1, col2 = st.columns([1, 5])  # Adjust width ratio as needed
+col1, col2 = st.columns([1.5, 5])  # Adjust width ratio as needed
 
 # Insert image in the first column
 with col1:
