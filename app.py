@@ -21,7 +21,7 @@ col1, col2 = st.columns([1, 5])  # Adjust width ratio as needed
 
 # Insert image in the first column
 with col1:
-    st.image("TINY.png", width=20)  # Adjust width as needed
+    st.image("TINY.png")  # Adjust width as needed
 
 # Insert title in the second column
 with col2:
