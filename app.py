@@ -113,9 +113,23 @@ while True:
             data_table_placeholder.dataframe(df)
 
             # Display metrics
-            live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"], border=True)
-            total_count_placeholder.metric("📈 Total RR", latest_data["count"], border=True)
-
+            # live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"], border=True)
+            # total_count_placeholder.metric("📈 Total RR", latest_data["count"], border=True)
+            live_count_placeholder.markdown(
+                f"<div style='padding: 10px 100px;'>"
+                f"<h3>📊 Live RR per minute</h3>"
+                f"<p style='font-size: 24px; font-weight: bold;'>{latest_data['count_60s']}</p>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+            
+            total_count_placeholder.markdown(
+                f"<div style='padding: 10px 100px;'>"
+                f"<h3>📈 Total RR</h3>"
+                f"<p style='font-size: 24px; font-weight: bold;'>{latest_data['count']}</p>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
             # Display alert based on prediction
             if last_valid_prediction:
                 if last_valid_prediction == "Normal":
