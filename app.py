@@ -39,7 +39,7 @@ with col1:
     data_table_placeholder = st.empty()
 
 with col2:
-    st.subheader("📊 RR")
+    st.subheader("📊 Respiratory Rate")
     live_count_placeholder = st.empty()
     total_count_placeholder = st.empty()
     status_placeholder = st.empty()  # Status for normal/warnings
