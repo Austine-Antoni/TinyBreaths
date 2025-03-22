@@ -27,7 +27,7 @@ with col1:
 
 # Insert title in the second column
 with col2:
-    st.markdown("<h1 style='margin-top: 90px; font-size: 60px;'>Respiratory Rate (RR) Monitoring Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='margin-top: 70px; font-size: 60px;'>Respiratory Rate (RR) Monitoring Dashboard</h1>", unsafe_allow_html=True)
 
 # Placeholder for Date and Time
 datetime_placeholder = st.subheader("📅 Loading date and time...")
