@@ -23,11 +23,11 @@ col1, col2 = st.columns([1.5, 5])  # Adjust width ratio as needed
 
 # Insert image in the first column
 with col1:
-    st.image("TINY.png", width = 90)  # Adjust width as needed
+    st.image("TINY.png", width = 500)  # Adjust width as needed
 
 # Insert title in the second column
 with col2:
-    st.markdown("<h1 style='margin-top: 90px; font-size: 80px;'>Respiratory Rate (RR) Monitoring Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='margin-top: 90px; font-size: 60px;'>Respiratory Rate (RR) Monitoring Dashboard</h1>", unsafe_allow_html=True)
 
 # Placeholder for Date and Time
 datetime_placeholder = st.subheader("📅 Loading date and time...")
