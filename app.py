@@ -32,7 +32,7 @@ with col2:
     datetime_placeholder = st.subheader("📅 Loading date and time...")
 
 # Layout: Table on the left, Readings & Alerts on the right
-col1, col2 = st.columns([2, 1.5])
+col1, col2 = st.columns([5, 5])
 
 with col1:
     st.subheader("📋 Patient Chart")
