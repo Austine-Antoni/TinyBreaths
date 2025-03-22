@@ -16,7 +16,7 @@ supabase = create_client(API_URL, API_KEY)
 model = load_model("LSTM_model.h5", compile = False)
 scaler = joblib.load("scaler.pkl")
 
-st.set_page_config(page_title="Respiratory Rate Dashboard", layout="wide")
+st.set_page_config(page_title="Respiratory Rate Dashboard")
 
 st.markdown(
     """
