@@ -28,6 +28,8 @@ with col1:
 # Insert title in the second column
 with col2:
     st.markdown("<h1 style='margin-top: 70px; font-size: 60px;'>Respiratory Rate (RR) Monitoring Dashboard</h1>", unsafe_allow_html=True)
+    data_table_placeholder = st.empty()
+
 
 # Placeholder for Date and Time
 datetime_placeholder = st.subheader("📅 Loading date and time...")
@@ -37,7 +39,6 @@ col1, col2 = st.columns([2, 1.5])
 
 with col1:
     st.subheader("📋 Patient Chart")
-    data_table_placeholder = st.empty()
 
 with col2:
     st.subheader("📊 RR")
