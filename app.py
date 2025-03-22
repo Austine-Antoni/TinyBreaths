@@ -30,27 +30,7 @@ st.markdown(
         padding: 20px;
         border-radius: 10px;
         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Center Align Metrics */
-    .metric-container {
-        padding: 10px 100px; 
-        border: 1px solid #ccc; 
-        border-radius: 10px; 
-        text-align: center;
-    }
-    
-    /* Font Styling for Metrics */
-    .metric-title {
-        font-size: 20px; 
-        margin: 0;
-    }
-    .metric-value {
-        font-size: 50px; 
-        font-weight: bold; 
-        margin: 0;
-    }
-    
+    } 
     </style>
     """,
     unsafe_allow_html=True
