@@ -16,28 +16,7 @@ supabase = create_client(API_URL, API_KEY)
 model = load_model("LSTM_model.h5", compile = False)
 scaler = joblib.load("scaler.pkl")
 
-st.set_page_config(page_title="Respiratory Rate Dashboard")
-
-st.markdown(
-    """
-    <style>
-    /* Outer Page Background */
-    body {
-        background-color: #f0f2f6;  /* Light grayish-blue */
-    }
-    
-    /* Inner Content Background */
-    .main {
-        background-color: #ffffff;  /* White */
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    } 
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
+st.set_page_config(page_title="Respiratory Rate Dashboard", layout = "wide")
 
 # Create two columns
 col1, col2 = st.columns([1.5, 5])  # Adjust width ratio as needed
