@@ -55,7 +55,7 @@ def fetch_latest_data():
 # Function to make predictions
 def predict_category(stored_count_60s):
     # if stored_count_60s == 0:
-    #     return None  # No prediction if stored_count_60s is 0
+    #     return np.nan  # No prediction if stored_count_60s is 0
     
     new_input = np.array([[60, stored_count_60s]])
     new_input_scaled = scaler.transform(new_input.reshape(-1, 2))
@@ -69,7 +69,7 @@ def predict_category(stored_count_60s):
 
 # Function to update Supabase with prediction
 def update_supabase_prediction(record_id, prediction):
-    if prediction is not None:
+    if prediction is not None and not (isinstance(prediction, float) and math.isnan(prediction)):
         supabase.table("maintable").update({"prediction": prediction}).eq("id", record_id).execute()
 
 # Keep track of last valid values
