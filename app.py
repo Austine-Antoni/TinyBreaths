@@ -113,28 +113,8 @@ while True:
             data_table_placeholder.dataframe(df)
 
             # Display metrics
-            # live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"], border=True)
-            # total_count_placeholder.metric("📈 Total RR", latest_data["count"], border=True)
-
-            live_count_placeholder.markdown(
-                f"""
-                <div style='padding: 10px 100px; border: 1px solid #ccc; border-radius: 10px; text-align: center;'>
-                    <h3 style='font-size: 20px; margin: 0;'>📊 Live RR per minute</h3>
-                    <p style='font-size: 30px; font-weight: bold; margin: 0;'>{latest_data['count_60s']}</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            
-            total_count_placeholder.markdown(
-                f"""
-                <div style='padding: 10px 100px; border: 1px solid #ccc; border-radius: 10px; text-align: center;'>
-                    <h3 style='font-size: 20px; margin: 0;'>📈 Total RR</h3>
-                    <p style='font-size: 30px; font-weight: bold; margin: 0;'>{latest_data['count']}</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"], border=True)
+            total_count_placeholder.metric("📈 Total RR", latest_data["count"], border=True)
 
             
             # Display alert based on prediction
