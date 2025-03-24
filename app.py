@@ -118,7 +118,7 @@ while True:
             total_count_placeholder.metric("📈 Total RR", latest_data["count"], border=True)
 
             # Status
-            if last_valid_prediction:
+            with status_placeholder:
                 if last_valid_prediction == "Normal":
                     status_placeholder.success(f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
                 elif last_valid_prediction == "Tachypnea":
