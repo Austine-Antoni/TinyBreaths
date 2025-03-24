@@ -117,7 +117,7 @@ while True:
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"], border=True)
             total_count_placeholder.metric("📈 Total RR", latest_data["count"], border=True)
 
-            # 🛠 Fix: Ensure prediction updates correctly
+            # Status
             if last_valid_prediction:
                 if last_valid_prediction == "Normal":
                     status_placeholder.success(f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
@@ -125,10 +125,6 @@ while True:
                     status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
                 elif last_valid_prediction == "Bradypnea":
                     status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
-
-            # ✅ Fix: Ensure "Awaiting data" message appears when no valid prediction exists
-            if last_valid_prediction is None:
-                status_placeholder.info("⏳ Awaiting data... No valid prediction yet.")
 
             # Chart update
             fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
