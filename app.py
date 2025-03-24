@@ -132,10 +132,7 @@ while True:
                 st.session_state.last_valid_prediction = last_valid_prediction
                 st.session_state.last_valid_stored_count = last_valid_stored_count
                 st.session_state.last_valid_timestamp = last_valid_timestamp
-                st.experimental_rerun() 
             
-            status_placeholder.empty()  # 🔄 Clears previous status
-
             # **Always retain & display the last valid prediction**
             if st.session_state.last_valid_prediction == "Normal":
                 status_placeholder.success(
