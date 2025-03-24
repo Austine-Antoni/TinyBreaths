@@ -54,9 +54,6 @@ def fetch_latest_data():
 
 # Function to make predictions
 def predict_category(stored_count_60s):
-    # if stored_count_60s == 0:
-    #     return np.nan  # No prediction if stored_count_60s is 0
-    
     new_input = np.array([[60, stored_count_60s]])
     new_input_scaled = scaler.transform(new_input.reshape(-1, 2))
     new_input_reshaped = new_input_scaled.reshape(1, 1, 2)
@@ -64,6 +61,9 @@ def predict_category(stored_count_60s):
     new_prediction = model.predict(new_input_reshaped)
     predicted_category = np.argmax(new_prediction, axis=1)
     
+    if stored_count_60s == 0:
+        return None  # No prediction if stored_count_60s is 0
+        
     category_map = ['Bradypnea', 'Normal', 'Tachypnea']
     return category_map[int(predicted_category[0])]
 
