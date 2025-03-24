@@ -53,19 +53,30 @@ def fetch_latest_data():
     return response.data if response.data else []
 
 # Function to make predictions
+# Function to make predictions
 def predict_category(stored_count_60s):
-    if stored_count_60s == 0:
-        return None  # No prediction if stored_count_60s is 0
-    
-    new_input = np.array([[60, stored_count_60s]])
-    new_input_scaled = scaler.transform(new_input.reshape(-1, 2))
-    new_input_reshaped = new_input_scaled.reshape(1, 1, 2)
-    
-    new_prediction = model.predict(new_input_reshaped)
-    predicted_category = np.argmax(new_prediction, axis=1)
-    
-    category_map = ['Bradypnea', 'Normal', 'Tachypnea']
-    return category_map[int(predicted_category[0])]
+    if stored_count_60s == 0 or stored_count_60s is None:
+        return "Unknown"  # Return a default category instead of None
+
+    try:
+        new_input = np.array([[60, stored_count_60s]])
+        new_input_scaled = scaler.transform(new_input.reshape(-1, 2))
+        new_input_reshaped = new_input_scaled.reshape(1, 1, -1)  # Ensure correct shape
+
+        new_prediction = model.predict(new_input_reshaped)
+        predicted_category = np.argmax(new_prediction, axis=1)
+
+        category_map = ['Bradypnea', 'Normal', 'Tachypnea']
+        
+        if predicted_category[0] >= len(category_map):
+            return "Unknown"  # Prevent out-of-bounds error
+
+        return category_map[int(predicted_category[0])]
+
+    except Exception as e:
+        print(f"Prediction Error: {e}")
+        return "Unknown"
+
 
 # Function to update Supabase with prediction
 def update_supabase_prediction(record_id, prediction):
