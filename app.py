@@ -112,7 +112,7 @@ while True:
                     df.at[df.index[0], "prediction"] = current_prediction  # Update dataframe locally
                     
             # Store last valid values
-            if current_prediction in ["Tachypnea", "Bradypnea", "Normal"] and current_prediction != st.session_state.last_valid_prediction:
+            if current_prediction in ["Tachypnea", "Bradypnea", "Normal"]:
                 last_valid_stored_count = stored_count
                 last_valid_prediction = current_prediction
                 last_valid_timestamp = last_data_timestamp  # Update timestamp
@@ -120,45 +120,24 @@ while True:
             # Display patient chart
             data_table_placeholder.dataframe(df)
 
-            # Initialize session state variables if not set
-            if "last_valid_prediction" not in st.session_state:
-                st.session_state.last_valid_prediction = None
-                st.session_state.last_valid_stored_count = None
-                st.session_state.last_valid_timestamp = None
-            
-            # Check if there's a new valid prediction
-            if last_valid_prediction and last_valid_prediction != st.session_state.last_valid_prediction:
-                # Update session state only if the prediction has changed
-                st.session_state.last_valid_prediction = last_valid_prediction
-                st.session_state.last_valid_stored_count = last_valid_stored_count
-                st.session_state.last_valid_timestamp = last_valid_timestamp
-                st.experimental_rerun() 
-            
-            status_placeholder.empty()  # 🔄 Clears previous status
 
-            # **Always retain & display the last valid prediction**
-            if st.session_state.last_valid_prediction == "Normal":
-                status_placeholder.success(
-                    f"✅ Normal \n📊 Stored Count: {st.session_state.last_valid_stored_count} at {st.session_state.last_valid_timestamp}"
-                )
-            elif st.session_state.last_valid_prediction == "Tachypnea":
-                status_placeholder.warning(
-                    f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {st.session_state.last_valid_stored_count} at {st.session_state.last_valid_timestamp}"
-                )
-            elif st.session_state.last_valid_prediction == "Bradypnea":
-                status_placeholder.error(
-                    f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {st.session_state.last_valid_stored_count} at {st.session_state.last_valid_timestamp}"
-                )
-            # # Display alert based on the **local** prediction
-            # if last_valid_prediction:
-            #     if last_valid_prediction == "Normal":
-            #         status_placeholder.success(f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
-            #     elif last_valid_prediction == "Tachypnea":
-            #         status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
-            #     elif last_valid_prediction == "Bradypnea":
-            #         status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
-            # else:
-            #     status_placeholder.info("Waiting for valid prediction...")
+            # Clears previous status
+            status_placeholder.empty()  
+            
+            if last_valid_timestamp:
+                # Display status based on the last valid prediction
+                if last_valid_prediction == "Normal":
+                    status_placeholder.success(
+                        f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
+                    )
+                elif last_valid_prediction == "Tachypnea":
+                    status_placeholder.warning(
+                        f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
+                    )
+                elif last_valid_prediction == "Bradypnea":
+                    status_placeholder.error(
+                        f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
+                    )
 
             # Display metrics
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
