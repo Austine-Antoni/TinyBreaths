@@ -134,5 +134,4 @@ if latest_data_list:
     chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
 
 # 🔹 Auto-refresh every 5 seconds to check for new data
-time.sleep(5)
 st.rerun()
