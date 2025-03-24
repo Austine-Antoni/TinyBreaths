@@ -78,7 +78,6 @@ last_valid_prediction = None
 last_valid_timestamp = None
 last_data_timestamp = None  # Track the timestamp of the last received data
 
-# Main loop to process data in real-time
 while True:
     try:
         latest_data_list = fetch_latest_data()
@@ -93,7 +92,7 @@ while True:
             latest_data = df.iloc[0]
             last_data_timestamp = latest_data["timestamp"]
             
-            # Update the date and time placeholder with the latest timestamp
+            # Update date/time
             latest_timestamp = last_data_timestamp.strftime("%A, %B %d, %Y | %H:%M:%S")
             datetime_placeholder.subheader(f"📅 {latest_timestamp}")
 
@@ -103,11 +102,13 @@ while True:
                 update_supabase_prediction(latest_data["id"], predicted_value)
                 df.at[df.index[0], "prediction"] = predicted_value
             
-            # Store last valid values if there is a prediction
-            if latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
+            # Store last valid values if there is a valid prediction
+            if latest_data["prediction"] and latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
                 last_valid_stored_count = latest_data["stored_count_60s"]
                 last_valid_prediction = latest_data["prediction"]
                 last_valid_timestamp = last_data_timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                last_valid_prediction = None  # Reset if no valid prediction
 
             # Display patient chart
             data_table_placeholder.dataframe(df)
@@ -116,8 +117,7 @@ while True:
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"], border=True)
             total_count_placeholder.metric("📈 Total RR", latest_data["count"], border=True)
 
-            
-            # Display alert based on prediction
+            # 🛠 Fix: Ensure prediction updates correctly
             if last_valid_prediction:
                 if last_valid_prediction == "Normal":
                     status_placeholder.success(f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
@@ -125,8 +125,10 @@ while True:
                     status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
                 elif last_valid_prediction == "Bradypnea":
                     status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
-                elif last_valid_prediction is None:
-                    status_placeholder.info("⏳ Awaiting data... No valid prediction yet.")
+
+            # ✅ Fix: Ensure "Awaiting data" message appears when no valid prediction exists
+            if last_valid_prediction is None:
+                status_placeholder.info("⏳ Awaiting data... No valid prediction yet.")
 
             # Chart update
             fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
@@ -134,6 +136,5 @@ while True:
                           labels={"timestamp": "Time", "count_60s": "RR per min", "count": "Total RR"})
             chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
 
-    
     except Exception as e:
         st.error(f"Error in main loop: {e}")
