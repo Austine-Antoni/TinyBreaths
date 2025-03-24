@@ -112,7 +112,7 @@ while True:
                     df.at[df.index[0], "prediction"] = current_prediction  # Update dataframe locally
                     
             # Store last valid values
-            if current_prediction in ["Tachypnea", "Bradypnea", "Normal"]:
+            if current_prediction in ["Tachypnea", "Bradypnea", "Normal"] and current_prediction != st.session_state.last_valid_prediction:
                 last_valid_stored_count = stored_count
                 last_valid_prediction = current_prediction
                 last_valid_timestamp = last_data_timestamp  # Update timestamp
