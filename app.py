@@ -8,6 +8,8 @@ import plotly.express as px
 from tensorflow.keras.models import load_model
 from supabase import create_client
 
+global last_valid_prediction  # Store the last valid category
+
 # Supabase connection
 API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
 API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jcmxtZGFkdGVrYXpmbmhtcXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MTA2MzksImV4cCI6MjA1NzA4NjYzOX0.25bkWBV3v4cyjcA_-dUL8-IK3fSywARfVQ82UsZPelc'  
@@ -52,8 +54,8 @@ def fetch_latest_data():
 
 # Function to make predictions
 def predict_category(stored_count_60s):
-    # if stored_count_60s == 0:
-    #     return None  # No prediction if stored_count_60s is 0
+    if stored_count_60s == 0:
+        return last_valid_prediction  # No prediction if stored_count_60s is 0
     
     new_input = np.array([[60, stored_count_60s]])
     new_input_scaled = scaler.transform(new_input.reshape(-1, 2))
