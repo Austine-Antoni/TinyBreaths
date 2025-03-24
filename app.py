@@ -98,43 +98,21 @@ while True:
             datetime_placeholder.subheader(f"📅 {latest_timestamp}")
 
             # Check and update prediction
-            if pd.isna(latest_data.get("prediction", None)):
-                predicted_value = predict_category(latest_data["stored_count_60s"])
-                update_supabase_prediction(latest_data["id"], predicted_value)
-                df.at[df.index[0], "prediction"] = predicted_value
+            if latest_data.get("prediction") is None or pd.isna(latest_data.get("prediction")):
+                stored_count = latest_data.get("stored_count_60s", None)
+
+                if stored_count is not None:  # Ensure stored_count_60s exists
+                    predicted_value = predict_category(stored_count)
+                    update_supabase_prediction(latest_data["id"], predicted_value)
+                    df.at[df.index[0], "prediction"] = predicted_value
             
-            # Store last valid values if there is a prediction
-            if latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
+            # Store last valid values if prediction exists
+            if latest_data.get("prediction") in ["Tachypnea", "Bradypnea", "Normal"]:
                 last_valid_stored_count = latest_data["stored_count_60s"]
                 last_valid_prediction = latest_data["prediction"]
-                last_valid_timestamp = last_data_timestamp.strftime("%Y-%m-%d %H:%M:%S")
-
+            
             # Display patient chart
             data_table_placeholder.dataframe(df)
-
-            # Display metrics
-            live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
-            total_count_placeholder.metric("📈 Total RR", latest_data["count"])
-
-            # live_count_placeholder.markdown(
-            #     f"""
-            #     <div style='padding: 10px 100px; border: 1px solid #ccc; border-radius: 10px; text-align: center;'>
-            #         <h3 style='font-size: 20px; margin: 0;'>📊 Live RR per minute</h3>
-            #         <p style='font-size: 30px; font-weight: bold; margin: 0;'>{latest_data['count_60s']}</p>
-            #     </div>
-            #     """,
-            #     unsafe_allow_html=True
-            # )
-            
-            # total_count_placeholder.markdown(
-            #     f"""
-            #     <div style='padding: 10px 100px; border: 1px solid #ccc; border-radius: 10px; text-align: center;'>
-            #         <h3 style='font-size: 20px; margin: 0;'>📈 Total RR</h3>
-            #         <p style='font-size: 30px; font-weight: bold; margin: 0;'>{latest_data['count']}</p>
-            #     </div>
-            #     """,
-            #     unsafe_allow_html=True
-            # )
 
             
             # Display alert based on prediction
@@ -145,6 +123,10 @@ while True:
             elif last_valid_prediction == "Bradypnea":
                 status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
 
+             # Display metrics
+            live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
+            total_count_placeholder.metric("📈 Total RR", latest_data["count"])
+            
             # Chart update
             fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
                           title=f"RR Over Time (Latest: {latest_timestamp})",
