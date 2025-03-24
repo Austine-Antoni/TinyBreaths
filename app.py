@@ -97,34 +97,38 @@ while True:
             latest_timestamp = last_data_timestamp.strftime("%A, %B %d, %Y | %H:%M:%S")
             datetime_placeholder.subheader(f"📅 {latest_timestamp}")
 
-            # Check and update prediction
-            if latest_data.get("prediction") is None or pd.isna(latest_data.get("prediction")):
-                stored_count = latest_data.get("stored_count_60s", None)
+            # Predict category directly in the code
+            stored_count = latest_data.get("stored_count_60s", None)
 
-                if stored_count is not None:  # Ensure stored_count_60s exists
-                    predicted_value = predict_category(stored_count)
-                    update_supabase_prediction(latest_data["id"], predicted_value)
-                    df.at[df.index[0], "prediction"] = predicted_value
-            
-            # Store last valid values if prediction exists
-            if latest_data.get("prediction") in ["Tachypnea", "Bradypnea", "Normal"]:
-                last_valid_stored_count = latest_data["stored_count_60s"]
-                last_valid_prediction = latest_data["prediction"]
-                last_valid_timestamp = last_data_timestamp  # Ensure timestamp updates
+            if stored_count is not None and stored_count > 0:
+                current_prediction = predict_category(stored_count)
+            else:
+                current_prediction = None
 
-            
+            # Store last valid values
+            if current_prediction in ["Tachypnea", "Bradypnea", "Normal"]:
+                last_valid_stored_count = stored_count
+                last_valid_prediction = current_prediction
+                last_valid_timestamp = last_data_timestamp  # Update timestamp
+
             # Display patient chart
             data_table_placeholder.dataframe(df)
 
-            
-            # Display alert based on prediction
+            # Display alert based on the **local** prediction
             if last_valid_prediction:
                 if last_valid_prediction == "Normal":
-                    status_placeholder.success(f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
+                    status_placeholder.success(f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
                 elif last_valid_prediction == "Tachypnea":
-                    status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
+                    status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
                 elif last_valid_prediction == "Bradypnea":
-                    status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
+                    status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
+            else:
+                status_placeholder.info("Waiting for valid prediction...")
+
+            # Display metrics
+            live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
+            total_count_placeholder.metric("📈 Total RR", latest_data["count"])
+
 
              # Display metrics
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
