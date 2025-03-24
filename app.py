@@ -105,6 +105,12 @@ while True:
             else:
                 current_prediction = None
 
+            # Update Supabase only if no prediction exists in the database
+            if pd.isna(latest_data.get("prediction")) or latest_data.get("prediction") is None:
+                if current_prediction:
+                    update_supabase_prediction(latest_data["id"], current_prediction)
+                    df.at[df.index[0], "prediction"] = current_prediction  # Update dataframe locally
+                    
             # Store last valid values
             if current_prediction in ["Tachypnea", "Bradypnea", "Normal"]:
                 last_valid_stored_count = stored_count
