@@ -8,8 +8,6 @@ import plotly.express as px
 from tensorflow.keras.models import load_model
 from supabase import create_client
 
-global last_valid_prediction  # Store the last valid category
-
 # Supabase connection
 API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
 API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jcmxtZGFkdGVrYXpmbmhtcXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MTA2MzksImV4cCI6MjA1NzA4NjYzOX0.25bkWBV3v4cyjcA_-dUL8-IK3fSywARfVQ82UsZPelc'  
@@ -18,28 +16,21 @@ supabase = create_client(API_URL, API_KEY)
 model = load_model("LSTM_model.h5", compile = False)
 scaler = joblib.load("scaler.pkl")
 
-# Create two columns
-col1, col2 = st.columns([1.5, 5])  # Adjust width ratio as needed
+# App title
+st.title("Respiratory Rate (RR) Monitoring Dashboard")
 
-# Insert image in the first column
-with col1:
-    st.image("TINY.png")  # Adjust width as needed
-
-# Insert title in the second column
-with col2:
-    st.title("Respiratory Rate (RR) Monitoring Dashboard")
-    # Placeholder for Date and Time
-    datetime_placeholder = st.subheader("📅 Loading date and time...")
+# Placeholder for Date and Time
+datetime_placeholder = st.subheader("📅 Loading date and time...")
 
 # Layout: Table on the left, Readings & Alerts on the right
-col1, col2 = st.columns([5, 2])
+col1, col2 = st.columns([2, 1.5])
 
 with col1:
     st.subheader("📋 Patient Chart")
     data_table_placeholder = st.empty()
 
 with col2:
-    st.subheader("📊 Respiratory Rate")
+    st.subheader("📊 RR")
     live_count_placeholder = st.empty()
     total_count_placeholder = st.empty()
     status_placeholder = st.empty()  # Status for normal/warnings
@@ -54,6 +45,9 @@ def fetch_latest_data():
 
 # Function to make predictions
 def predict_category(stored_count_60s):
+    if stored_count_60s == 0:
+        return None  # No prediction if stored_count_60s is 0
+    
     new_input = np.array([[60, stored_count_60s]])
     new_input_scaled = scaler.transform(new_input.reshape(-1, 2))
     new_input_reshaped = new_input_scaled.reshape(1, 1, 2)
@@ -61,15 +55,12 @@ def predict_category(stored_count_60s):
     new_prediction = model.predict(new_input_reshaped)
     predicted_category = np.argmax(new_prediction, axis=1)
     
-    if stored_count_60s == 0:
-        return None  # No prediction if stored_count_60s is 0
-        
     category_map = ['Bradypnea', 'Normal', 'Tachypnea']
     return category_map[int(predicted_category[0])]
 
 # Function to update Supabase with prediction
 def update_supabase_prediction(record_id, prediction):
-    if prediction is not None and not (isinstance(prediction, float) and math.isnan(prediction)):
+    if prediction is not None:
         supabase.table("maintable").update({"prediction": prediction}).eq("id", record_id).execute()
 
 # Keep track of last valid values
@@ -82,6 +73,9 @@ last_data_timestamp = None  # Track the timestamp of the last received data
 while True:
     try:
         latest_data_list = fetch_latest_data()
+        if not latest_data_list:
+            status_placeholder.error("⚠️ Connect the device.")
+            continue 
             
         if latest_data_list:
             df = pd.DataFrame(latest_data_list)
@@ -97,70 +91,34 @@ while True:
             latest_timestamp = last_data_timestamp.strftime("%A, %B %d, %Y | %H:%M:%S")
             datetime_placeholder.subheader(f"📅 {latest_timestamp}")
 
-            # Predict category directly in the code
-            stored_count = latest_data.get("stored_count_60s", None)
-
-            if stored_count is not None and stored_count > 0:
-                current_prediction = predict_category(stored_count)
-            else:
-                current_prediction = None
-
-            # Update Supabase only if no prediction exists in the database
-            if pd.isna(latest_data.get("prediction")) or latest_data.get("prediction") is None:
-                if current_prediction:
-                    update_supabase_prediction(latest_data["id"], current_prediction)
-                    df.at[df.index[0], "prediction"] = current_prediction  # Update dataframe locally
-                    
-            # Store last valid values
-            if current_prediction in ["Tachypnea", "Bradypnea", "Normal"] and current_prediction != st.session_state.last_valid_prediction:
-                last_valid_stored_count = stored_count
-                last_valid_prediction = current_prediction
-                last_valid_timestamp = last_data_timestamp  # Update timestamp
+            # Check and update prediction
+            if pd.isna(latest_data.get("prediction", None)):
+                predicted_value = predict_category(latest_data["stored_count_60s"])
+                update_supabase_prediction(latest_data["id"], predicted_value)
+                df.at[df.index[0], "prediction"] = predicted_value
+            
+            # Store last valid values if there is a prediction
+            if latest_data["prediction"] in ["Tachypnea", "Bradypnea", "Normal"]:
+                last_valid_stored_count = latest_data["stored_count_60s"]
+                last_valid_prediction = latest_data["prediction"]
+                last_valid_timestamp = last_data_timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
             # Display patient chart
             data_table_placeholder.dataframe(df)
 
-            # Initialize session state variables if not set
-            if "last_valid_prediction" not in st.session_state:
-                st.session_state.last_valid_prediction = None
-                st.session_state.last_valid_stored_count = None
-                st.session_state.last_valid_timestamp = None
-            
-            # Check if there's a new valid prediction
-            if last_valid_prediction and last_valid_prediction != st.session_state.last_valid_prediction:
-                # Update session state only if the prediction has changed
-                st.session_state.last_valid_prediction = last_valid_prediction
-                st.session_state.last_valid_stored_count = last_valid_stored_count
-                st.session_state.last_valid_timestamp = last_valid_timestamp
-            
-            # **Always retain & display the last valid prediction**
-            if st.session_state.last_valid_prediction == "Normal":
-                status_placeholder.success(
-                    f"✅ Normal \n📊 Stored Count: {st.session_state.last_valid_stored_count} at {st.session_state.last_valid_timestamp}"
-                )
-            elif st.session_state.last_valid_prediction == "Tachypnea":
-                status_placeholder.warning(
-                    f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {st.session_state.last_valid_stored_count} at {st.session_state.last_valid_timestamp}"
-                )
-            elif st.session_state.last_valid_prediction == "Bradypnea":
-                status_placeholder.error(
-                    f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {st.session_state.last_valid_stored_count} at {st.session_state.last_valid_timestamp}"
-                )
-            # # Display alert based on the **local** prediction
-            # if last_valid_prediction:
-            #     if last_valid_prediction == "Normal":
-            #         status_placeholder.success(f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
-            #     elif last_valid_prediction == "Tachypnea":
-            #         status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
-            #     elif last_valid_prediction == "Bradypnea":
-            #         status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
-            # else:
-            #     status_placeholder.info("Waiting for valid prediction...")
-
             # Display metrics
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
             total_count_placeholder.metric("📈 Total RR", latest_data["count"])
-            
+
+            # Display alert based on prediction
+            if last_valid_prediction:
+                if last_valid_prediction == "Normal":
+                    status_placeholder.success(f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
+                elif last_valid_prediction == "Tachypnea":
+                    status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
+                elif last_valid_prediction == "Bradypnea":
+                    status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
+
             # Chart update
             fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
                           title=f"RR Over Time (Latest: {latest_timestamp})",
