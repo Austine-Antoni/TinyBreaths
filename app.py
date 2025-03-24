@@ -16,29 +16,30 @@ supabase = create_client(API_URL, API_KEY)
 model = load_model("LSTM_model.h5", compile = False)
 scaler = joblib.load("scaler.pkl")
 
+st.set_page_config(page_title="Respiratory Rate Dashboard", layout = "wide")
+
 # Create two columns
 col1, col2 = st.columns([1.5, 5])  # Adjust width ratio as needed
 
 # Insert image in the first column
 with col1:
-    st.image("TINY.png")  # Adjust width as needed
+    st.image("TINY.png", width = 500)  # Adjust width as needed
 
 # Insert title in the second column
 with col2:
-    st.title("Respiratory Rate (RR) Monitoring Dashboard")
-
-# Placeholder for Date and Time
-datetime_placeholder = st.subheader("📅 Loading date and time...")
+    st.markdown("<h1 style='margin-top: 70px; font-size: 60px;'>Respiratory Rate (RR) Monitoring Dashboard</h1>", unsafe_allow_html=True)
+    # Placeholder for Date and Time
+    datetime_placeholder = st.subheader("📅 Loading date and time...")
 
 # Layout: Table on the left, Readings & Alerts on the right
-col1, col2 = st.columns([2, 1.5])
+col1, col2 = st.columns([5, 5])
 
 with col1:
     st.subheader("📋 Patient Chart")
     data_table_placeholder = st.empty()
 
 with col2:
-    st.subheader("📊 RR")
+    st.subheader("📊 Respiratory Rate")
     live_count_placeholder = st.empty()
     total_count_placeholder = st.empty()
     status_placeholder = st.empty()  # Status for normal/warnings
@@ -112,9 +113,30 @@ while True:
             data_table_placeholder.dataframe(df)
 
             # Display metrics
-            live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
-            total_count_placeholder.metric("📈 Total RR", latest_data["count"])
+            # live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"], border=True)
+            # total_count_placeholder.metric("📈 Total RR", latest_data["count"], border=True)
 
+            live_count_placeholder.markdown(
+                f"""
+                <div style='padding: 10px 100px; border: 1px solid #ccc; border-radius: 10px; text-align: center;'>
+                    <h3 style='font-size: 20px; margin: 0;'>📊 Live RR per minute</h3>
+                    <p style='font-size: 30px; font-weight: bold; margin: 0;'>{latest_data['count_60s']}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            
+            total_count_placeholder.markdown(
+                f"""
+                <div style='padding: 10px 100px; border: 1px solid #ccc; border-radius: 10px; text-align: center;'>
+                    <h3 style='font-size: 20px; margin: 0;'>📈 Total RR</h3>
+                    <p style='font-size: 30px; font-weight: bold; margin: 0;'>{latest_data['count']}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            
             # Display alert based on prediction
             if last_valid_prediction:
                 if last_valid_prediction == "Normal":
@@ -123,6 +145,8 @@ while True:
                     status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
                 elif last_valid_prediction == "Bradypnea":
                     status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
+                elif last_valid_prediction is None:
+                    status_placeholder.info("⏳ Awaiting data... No valid prediction yet.")
 
             # Chart update
             fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
