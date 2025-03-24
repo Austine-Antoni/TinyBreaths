@@ -16,18 +16,16 @@ supabase = create_client(API_URL, API_KEY)
 model = load_model("LSTM_model.h5", compile = False)
 scaler = joblib.load("scaler.pkl")
 
-st.set_page_config(page_title="Respiratory Rate Dashboard", layout = "wide")
-
 # Create two columns
 col1, col2 = st.columns([1.5, 5])  # Adjust width ratio as needed
 
 # Insert image in the first column
 with col1:
-    st.image("TINY.png", width = 500)  # Adjust width as needed
+    st.image("TINY.png")  # Adjust width as needed
 
 # Insert title in the second column
 with col2:
-    st.markdown("<h1 style='margin-top: 70px; font-size: 60px;'>Respiratory Rate (RR) Monitoring Dashboard</h1>", unsafe_allow_html=True)
+    st.title"Respiratory Rate (RR) Monitoring Dashboard")
     # Placeholder for Date and Time
     datetime_placeholder = st.subheader("📅 Loading date and time...")
 
@@ -145,8 +143,6 @@ while True:
                     status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
                 elif last_valid_prediction == "Bradypnea":
                     status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at ({last_valid_timestamp})")
-                elif last_valid_prediction is None:
-                    status_placeholder.info("⏳ Awaiting data... No valid prediction yet.")
 
             # Chart update
             fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
