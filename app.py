@@ -113,8 +113,8 @@ while True:
             data_table_placeholder.dataframe(df)
 
             # Display metrics
-            live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"], border=True)
-            total_count_placeholder.metric("📈 Total RR", latest_data["count"], border=True)
+            live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
+            total_count_placeholder.metric("📈 Total RR", latest_data["count"])
 
             # live_count_placeholder.markdown(
             #     f"""
