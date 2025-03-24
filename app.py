@@ -54,8 +54,8 @@ def fetch_latest_data():
 
 # Function to make predictions
 def predict_category(stored_count_60s):
-    if stored_count_60s == 0:
-        return None  # No prediction if stored_count_60s is 0
+    # if stored_count_60s == 0:
+    #     return None  # No prediction if stored_count_60s is 0
     
     new_input = np.array([[60, stored_count_60s]])
     new_input_scaled = scaler.transform(new_input.reshape(-1, 2))
