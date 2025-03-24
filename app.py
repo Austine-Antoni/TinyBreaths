@@ -128,8 +128,8 @@ while True:
                     status_placeholder.warning(f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
                 elif last_valid_prediction == "Bradypnea":
                     status_placeholder.error(f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}")
-            else:
-                status_placeholder.info("Waiting for valid prediction...")
+            # else:
+            #     status_placeholder.info("Waiting for valid prediction...")
 
             # Display metrics
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
