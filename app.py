@@ -122,17 +122,17 @@ while True:
             # Clears previous status
             status_placeholder.empty()  
             
-            if last_valid_timestamp:
+            if last_data_timestamp:
                 # Display status based on the last valid prediction
-                if last_valid_prediction == "Normal":
+                if current_prediction == "Normal":
                     status_placeholder.success(
                         f"✅ Normal \n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
                     )
-                elif last_valid_prediction == "Tachypnea":
+                elif current_prediction == "Tachypnea":
                     status_placeholder.warning(
                         f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
                     )
-                elif last_valid_prediction == "Bradypnea":
+                elif current_prediction == "Bradypnea":
                     status_placeholder.error(
                         f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
                     )
