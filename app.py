@@ -18,7 +18,7 @@ scaler = joblib.load("scaler.pkl")
 
 st.set_page_config(page_title="Tiny Breaths", page_icon="TINY.png", layout="wide")
 # Create two columns
-col1, col2 = st.columns([1.5, 5])  # Adjust width ratio as needed
+col1, col2 = st.columns([1, 5])  # Adjust width ratio as needed
 
 # Insert image in the first column
 with col1:
@@ -31,7 +31,7 @@ with col2:
     datetime_placeholder = st.subheader("📅 Loading date and time...")
 
 # Layout: Table on the left, Readings & Alerts on the right
-col1, col2 = st.columns([5, 2])
+col1, col2 = st.columns([5, 5])
 
 with col1:
     st.subheader("📋 Patient Chart")
