@@ -16,6 +16,7 @@ supabase = create_client(API_URL, API_KEY)
 model = load_model("LSTM_model.h5", compile = False)
 scaler = joblib.load("scaler.pkl")
 
+st.set_page_config(page_title="Tiny Breaths", page_icon="TINY.png", layout="wide")
 # Create two columns
 col1, col2 = st.columns([1.5, 5])  # Adjust width ratio as needed
 
