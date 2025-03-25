@@ -8,8 +8,6 @@ import plotly.express as px
 from tensorflow.keras.models import load_model
 from supabase import create_client
 
-global last_valid_prediction  # Store the last valid category
-
 # Supabase connection
 API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
 API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jcmxtZGFkdGVrYXpmbmhtcXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MTA2MzksImV4cCI6MjA1NzA4NjYzOX0.25bkWBV3v4cyjcA_-dUL8-IK3fSywARfVQ82UsZPelc'  
@@ -49,20 +47,20 @@ chart_placeholder = st.empty()
 
 # Function to fetch latest data
 def fetch_latest_data():
-    response = supabase.table('maintable').select('*').order('timestamp', desc=True).limit(20).execute()
+    response = supabase.table('maintable').select('*').order('timestamp', desc=True).limit(50).execute()
     return response.data if response.data else []
 
 # Function to make predictions
 def predict_category(stored_count_60s):
+    if stored_count_60s == 0:
+        return None  # No prediction if stored_count_60s is 0
+        
     new_input = np.array([[60, stored_count_60s]])
     new_input_scaled = scaler.transform(new_input.reshape(-1, 2))
     new_input_reshaped = new_input_scaled.reshape(1, 1, 2)
     
     new_prediction = model.predict(new_input_reshaped)
     predicted_category = np.argmax(new_prediction, axis=1)
-    
-    if stored_count_60s == 0:
-        return None  # No prediction if stored_count_60s is 0
         
     category_map = ['Bradypnea', 'Normal', 'Tachypnea']
     return category_map[int(predicted_category[0])]
