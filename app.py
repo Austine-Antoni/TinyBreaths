@@ -26,7 +26,7 @@ with col1:
 
 # Insert title in the second column
 with col2:
-    st.title("Respiratory Rate (RR) Monitoring Dashboard")
+    st.title("\nRespiratory Rate (RR) Monitoring Dashboard")
     # Placeholder for Date and Time
     datetime_placeholder = st.subheader("📅 Loading date and time...")
 
