@@ -122,7 +122,7 @@ while True:
             # Clears previous status
             status_placeholder.empty()  
             
-            if last_data_timestamp:
+            if last_valid_prediction:
                 # Display status based on the last valid prediction
                 if last_valid_prediction == "Normal":
                     status_placeholder.success(
