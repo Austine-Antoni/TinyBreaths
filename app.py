@@ -69,7 +69,7 @@ def predict_category(stored_count_60s):
 # Function to update Supabase with prediction
 def update_supabase_prediction(record_id, prediction):
     if prediction is not None and not (isinstance(prediction, float) and math.isnan(prediction)):
-        supabase.table("maintable").update({"prediction": prediction}).eq("id", record_id).execute()
+        supabase.table("maintable").update({"diagnosis": prediction}).eq("id", record_id).execute()
 
 # Keep track of last valid values
 last_valid_stored_count = None
@@ -105,10 +105,10 @@ while True:
                 current_prediction = None
 
             # Update Supabase only if no prediction exists in the database
-            if pd.isna(latest_data.get("prediction")) or latest_data.get("prediction") is None:
+            if pd.isna(latest_data.get("diagnosis")) or latest_data.get("diagnosis") is None:
                 if current_prediction:
                     update_supabase_prediction(latest_data["id"], current_prediction)
-                    df.at[df.index[0], "prediction"] = current_prediction  # Update dataframe locally
+                    df.at[df.index[0], "diagnosis"] = current_prediction  # Update dataframe locally
                     
             # Store last valid values
             if current_prediction in ["Tachypnea", "Bradypnea", "Normal"]:
