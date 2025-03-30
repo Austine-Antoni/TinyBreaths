@@ -7,8 +7,8 @@ import pandas as pd
 import plotly.express as px
 from tensorflow.keras.models import load_model
 from supabase import create_client
-from playsound import playsound
-import threading
+#from playsound import playsound
+#import threading
 
 # Supabase connection
 API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
@@ -74,11 +74,11 @@ def update_supabase_prediction(record_id, prediction):
         supabase.table("maintable").update({"diagnosis": prediction}).eq("id", record_id).execute()
 
 # Load warning sound file 
-warning_sound = "alert.wav"
+#warning_sound = "alert.wav"
 
 # Function to play warning sound in the background
-def play_warning_sound():
-    playsound(warning_sound)  # Play sound
+#def play_warning_sound():
+#   playsound(warning_sound)  # Play sound
     
 # Keep track of last valid values
 last_valid_stored_count = None
