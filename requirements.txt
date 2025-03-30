@@ -10,3 +10,5 @@ scipy==1.15.2
 streamlit==1.42.2
 supabase==2.13.0
 tensorflow==2.18.0
+playsound
+threading
