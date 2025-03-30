@@ -7,8 +7,6 @@ import pandas as pd
 import plotly.express as px
 from tensorflow.keras.models import load_model
 from supabase import create_client
-#from playsound import playsound
-#import threading
 
 # Supabase connection
 API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
@@ -75,7 +73,7 @@ def update_supabase_prediction(record_id, prediction):
 
 def play_sound():
     """Inject JavaScript to play a sound in the browser"""
-    audio_url = "https://github.com/Austine-Antoni/TinyBreaths/blob/aaf3d35cd89a9303a942c37edcc8fa92a83d6dda/alert.wav"  # Update with your actual file URL
+    audio_url = "alert.wav"  # Update with your actual file URL
     sound_script = f"""
     <script>
     var audio = new Audio("{audio_url}");
@@ -160,9 +158,9 @@ while True:
             total_count_placeholder.metric("📈 Total RR", latest_data["count"])
             
             # Chart update
-            fig = px.line(df, x="timestamp", y=["count_60s", "count"], 
+            fig = px.line(df, x="timestamp", y=["count_60s"], 
                           title=f"RR Over Time (Latest: {latest_timestamp})",
-                          labels={"timestamp": "Time", "count_60s": "RR per min", "count": "Total RR"})
+                          labels={"timestamp": "Time", "count_60s": "RR per min"})
             chart_placeholder.plotly_chart(fig, use_container_width=True, key=f"chart_{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}")
 
     
