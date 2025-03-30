@@ -7,6 +7,8 @@ import pandas as pd
 import plotly.express as px
 from tensorflow.keras.models import load_model
 from supabase import create_client
+from playsound import playsound
+import threading
 
 # Supabase connection
 API_URL = 'https://ocrlmdadtekazfnhmquj.supabase.co'
@@ -71,6 +73,13 @@ def update_supabase_prediction(record_id, prediction):
     if prediction is not None and not (isinstance(prediction, float) and math.isnan(prediction)):
         supabase.table("maintable").update({"diagnosis": prediction}).eq("id", record_id).execute()
 
+# Load warning sound file 
+warning_sound = "alert.wav"
+
+# Function to play warning sound in the background
+def play_warning_sound():
+    playsound(warning_sound)  # Play sound
+    
 # Keep track of last valid values
 last_valid_stored_count = None
 last_valid_prediction = None
@@ -133,10 +142,14 @@ while True:
                     status_placeholder.warning(
                         f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
                     )
+                    # Play sound in a background thread (only for Tachypnea and Bradypnea)
+                    threading.Thread(target=play_warning_sound, daemon=True).start() 
                 elif last_valid_prediction == "Bradypnea":
                     status_placeholder.error(
                         f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
                     )
+                    # Play sound in a background thread (only for Tachypnea and Bradypnea)
+                    threading.Thread(target=play_warning_sound, daemon=True).start() 
 
             # Display metrics
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
