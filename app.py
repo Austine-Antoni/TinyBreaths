@@ -143,13 +143,13 @@ while True:
                         f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
                     )
                     # Play sound in a background thread (only for Tachypnea and Bradypnea)
-                    threading.Thread(target=play_warning_sound, daemon=True).start() 
+                    #threading.Thread(target=play_warning_sound, daemon=True).start() 
                 elif last_valid_prediction == "Bradypnea":
                     status_placeholder.error(
                         f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
                     )
                     # Play sound in a background thread (only for Tachypnea and Bradypnea)
-                    threading.Thread(target=play_warning_sound, daemon=True).start() 
+                    #threading.Thread(target=play_warning_sound, daemon=True).start() 
 
             # Display metrics
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
