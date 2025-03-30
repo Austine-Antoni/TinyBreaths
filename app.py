@@ -73,12 +73,16 @@ def update_supabase_prediction(record_id, prediction):
     if prediction is not None and not (isinstance(prediction, float) and math.isnan(prediction)):
         supabase.table("maintable").update({"diagnosis": prediction}).eq("id", record_id).execute()
 
-# Load warning sound file 
-#warning_sound = "alert.wav"
-
-# Function to play warning sound in the background
-#def play_warning_sound():
-#   playsound(warning_sound)  # Play sound
+def play_sound():
+    """Inject JavaScript to play a sound in the browser"""
+    audio_url = "https://github.com/Austine-Antoni/TinyBreaths/blob/aaf3d35cd89a9303a942c37edcc8fa92a83d6dda/alert.wav"  # Update with your actual file URL
+    sound_script = f"""
+    <script>
+    var audio = new Audio("{audio_url}");
+    audio.play();
+    </script>
+    """
+    st.markdown(sound_script, unsafe_allow_html=True)
     
 # Keep track of last valid values
 last_valid_stored_count = None
@@ -143,13 +147,13 @@ while True:
                         f"⚠️ ALERT: Tachypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
                     )
                     # Play sound in a background thread (only for Tachypnea and Bradypnea)
-                    #threading.Thread(target=play_warning_sound, daemon=True).start() 
+                    play_sound() 
                 elif last_valid_prediction == "Bradypnea":
                     status_placeholder.error(
                         f"🚨 CRITICAL ALERT: Bradypnea detected!\n📊 Stored Count: {last_valid_stored_count} at {last_valid_timestamp}"
                     )
                     # Play sound in a background thread (only for Tachypnea and Bradypnea)
-                    #threading.Thread(target=play_warning_sound, daemon=True).start() 
+                    play_sound() 
 
             # Display metrics
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
