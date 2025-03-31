@@ -42,6 +42,7 @@ with col2:
     live_count_placeholder = st.empty()
     total_count_placeholder = st.empty()
     status_placeholder = st.empty()  # Status for normal/warnings
+    warning_placeholder = st.empty()  
 
 st.subheader("📈 Respiratory Rate Over Time")
 chart_placeholder = st.empty()
@@ -153,6 +154,23 @@ while True:
                     # Play sound in a background thread (only for Tachypnea and Bradypnea)
                     # play_sound() 
 
+            # Check if count_60s has remained unchanged for 10 seconds
+            if "last_count_60s" not in st.session_state:
+                st.session_state["last_count_60s"] = current_count_60s
+                st.session_state["last_count_time"] = datetime.datetime.now()
+            
+            elapsed_time = (datetime.datetime.now() - st.session_state["last_count_time"]).total_seconds()
+            
+            if current_count_60s != st.session_state["last_count_60s"]:
+                # Reset timer if count_60s changes
+                st.session_state["last_count_60s"] = current_count_60s
+                st.session_state["last_count_time"] = datetime.datetime.now()
+                warning_placeholder.empty()  # Clear warning
+            
+            elif elapsed_time >= 10:
+                # Show warning if no change in 10 seconds
+                warning_placeholder.warning("⚠️ WARNING: No detected movement for 10 seconds!")
+                
             # Display metrics
             live_count_placeholder.metric("📊 Live RR per minute", latest_data["count_60s"])
             total_count_placeholder.metric("📈 Total RR", latest_data["count"])
