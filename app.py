@@ -103,6 +103,8 @@ while True:
             
             latest_data = df.iloc[0]
             last_data_timestamp = latest_data["timestamp"]
+            current_count_60s = latest_data["count_60s"]
+            current_timestamp = latest_data["timestamp"]
             
             # Update the date and time placeholder with the latest timestamp
             latest_timestamp = last_data_timestamp.strftime("%A, %B %d, %Y | %H:%M:%S")
